@@ -1,59 +1,63 @@
-const categories = [
-"Sports","Technology","Food","Gaming","Health",
-"Finance","Education","Travel","E-commerce","AI"
-];
+// REGISTER SYSTEM
+function registerUser() {
+  let name = document.getElementById("name").value;
+  let email = document.getElementById("email").value;
 
+  if (name === "" || email === "") {
+    alert("Fill all fields");
+    return;
+  }
+
+  localStorage.setItem("user", JSON.stringify({ name, email }));
+
+  document.getElementById("userMsg").innerText =
+    "Welcome " + name + " 🎉";
+}
+
+
+// 50+ IDEAS
 const ideas = [];
 
-for(let i = 1; i <= 50; i++){
+const categories = ["Tech", "Food", "Health", "Gaming", "Education"];
 
-    let category = categories[i % categories.length];
-
-    ideas.push({
-        title: category + " Startup Idea " + i,
-        category: category,
-        problem: "Major gap in " + category + " industry causing inefficiency.",
-        solution: "Digital platform solving key issues using automation & AI.",
-        target: "Students, Professionals, Businesses in " + category,
-        uniqueValue: "Affordable & scalable tech solution",
-        marketSize: "Rapidly growing global " + category + " market",
-        revenueModel: "Subscription + Ads + Premium",
-        competition: "Existing competitors but high differentiation",
-        scalability: "Cloud-based global expansion",
-        funding: "₹20L seed investment",
-        roadmap: "MVP → Beta → Monetization → Expansion"
-    });
+for (let i = 1; i <= 50; i++) {
+  ideas.push({
+    title: "Startup Idea " + i,
+    category: categories[i % 5],
+    problem: "People face inefficiency in this sector.",
+    solution: "A digital platform solving problems using AI & automation.",
+    target: "Students, Professionals, Businesses",
+    revenue: "Subscription + Ads + Premium features",
+    market: "Rapidly growing global market",
+    uniqueness: "Affordable & scalable solution"
+  });
 }
 
-const container = document.getElementById("ideasContainer");
 
-ideas.forEach((idea, index) => {
+// SHOW IDEAS
+function showIdeas() {
+  let filter = document.getElementById("categoryFilter").value;
+  let container = document.getElementById("ideasContainer");
 
-container.innerHTML += `
-<div class="idea-card">
-<h2>${idea.title}</h2>
-<p><strong>Category:</strong> ${idea.category}</p>
+  container.innerHTML = "";
 
-<button onclick="togglePlan(${index})">View Full Plan</button>
+  let filtered = ideas.filter(i => filter === "All" || i.category === filter);
 
-<div class="full-plan" id="plan-${index}">
-<p><strong>Problem:</strong> ${idea.problem}</p>
-<p><strong>Solution:</strong> ${idea.solution}</p>
-<p><strong>Target:</strong> ${idea.target}</p>
-<p><strong>Unique Value:</strong> ${idea.uniqueValue}</p>
-<p><strong>Market Size:</strong> ${idea.marketSize}</p>
-<p><strong>Revenue Model:</strong> ${idea.revenueModel}</p>
-<p><strong>Competition:</strong> ${idea.competition}</p>
-<p><strong>Scalability:</strong> ${idea.scalability}</p>
-<p><strong>Funding Required:</strong> ${idea.funding}</p>
-<p><strong>Future Roadmap:</strong> ${idea.roadmap}</p>
-</div>
-</div>
-`;
-
-});
-
-function togglePlan(index){
-const plan = document.getElementById("plan-"+index);
-plan.style.display = plan.style.display === "block" ? "none" : "block";
+  filtered.forEach(i => {
+    container.innerHTML += `
+      <div class="card">
+        <h3>${i.title}</h3>
+        <p><b>Category:</b> ${i.category}</p>
+        <p><b>Problem:</b> ${i.problem}</p>
+        <p><b>Solution:</b> ${i.solution}</p>
+        <p><b>Target:</b> ${i.target}</p>
+        <p><b>Revenue:</b> ${i.revenue}</p>
+        <p><b>Market:</b> ${i.market}</p>
+        <p><b>Unique Value:</b> ${i.uniqueness}</p>
+      </div>
+    `;
+  });
 }
+
+// AUTO LOAD
+showIdeas();

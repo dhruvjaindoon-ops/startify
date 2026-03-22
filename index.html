@@ -1,15 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Startify Elite</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Startify Elite Pro</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <h1>Startify Elite – Professional Startup Ideas</h1>
+<h1>Startify Elite – Professional Startup Ideas</h1>
 
-    <div id="ideasContainer" class="container"></div>
+<!-- REGISTER -->
+<div class="register-box">
+  <h2>Register</h2>
+  <input type="text" id="name" placeholder="Enter Name">
+  <input type="email" id="email" placeholder="Enter Email">
+  <button onclick="registerUser()">Register</button>
+  <p id="userMsg"></p>
+</div>
 
-    <script src="script.js"></script>
+<!-- FILTER -->
+<div class="filter-box">
+  <select id="categoryFilter">
+    <option value="All">All Categories</option>
+    <option value="Tech">Tech</option>
+    <option value="Food">Food</option>
+    <option value="Health">Health</option>
+    <option value="Gaming">Gaming</option>
+    <option value="Education">Education</option>
+  </select>
+
+  <button onclick="showIdeas()">Apply Filter</button>
+</div>
+
+<!-- IDEAS -->
+<div id="ideasContainer"></div>
+
+<script src="script.js"></script>
 </body>
 </html>
