@@ -1,39 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Startify Elite Pro</title>
+  <title>Startify AI</title>
   <link rel="stylesheet" href="style.css">
+
+  <!-- EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2/dist/email.min.js"></script>
+  <script>
+    (function(){
+      emailjs.init("YOUR_PUBLIC_KEY"); // 🔑 yaha apni Public Key daal
+    })();
+  </script>
 </head>
+
 <body>
 
-<h1>Startify Elite – Professional Startup Ideas</h1>
+<h1>🚀 Startify AI</h1>
 
-<!-- REGISTER -->
-<div class="register-box">
+<!-- 🔐 Registration -->
+<div class="box">
   <h2>Register</h2>
-  <input type="text" id="name" placeholder="Enter Name">
-  <input type="email" id="email" placeholder="Enter Email">
-  <button onclick="registerUser()">Register</button>
-  <p id="userMsg"></p>
+  <input id="email" placeholder="Enter Email"><br><br>
+  <button onclick="sendOTP()">Send OTP</button><br><br>
+
+  <input id="otpInput" placeholder="Enter OTP"><br><br>
+  <button onclick="verifyOTP()">Verify</button>
+
+  <p id="otpMsg"></p>
 </div>
 
-<!-- FILTER -->
-<div class="filter-box">
-  <select id="categoryFilter">
-    <option value="All">All Categories</option>
-    <option value="Tech">Tech</option>
-    <option value="Food">Food</option>
-    <option value="Health">Health</option>
-    <option value="Gaming">Gaming</option>
-    <option value="Education">Education</option>
-  </select>
+<hr>
 
-  <button onclick="showIdeas()">Apply Filter</button>
+<!-- 🤖 AI SECTION -->
+<div class="box">
+  <input id="userInput" placeholder="Enter any career or business">
+  <button onclick="generatePlan()">Generate</button>
 </div>
 
-<!-- IDEAS -->
-<div id="ideasContainer"></div>
+<div id="output"></div>
 
 <script src="script.js"></script>
 </body>
