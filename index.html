@@ -1,44 +1,764 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Startify AI</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Startify — Premium Startup Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg-page:#eef4ff;
+  --white:#ffffff;
+  --blue-50:#eff6ff;--blue-100:#dbeafe;--blue-200:#bfdbfe;--blue-300:#93c5fd;
+  --blue-400:#60a5fa;--blue-500:#3b82f6;--blue-600:#2563eb;--blue-700:#1d4ed8;
+  --sky-400:#38bdf8;--sky-500:#0ea5e9;--sky-600:#0284c7;
+  --teal-400:#2dd4bf;--teal-500:#14b8a6;
+  --indigo-500:#6366f1;
+  --rose-400:#fb7185;--emerald-500:#10b981;--amber-400:#fbbf24;
+  --text-900:#0f172a;--text-700:#1e40af;--text-600:#334155;--text-500:#475569;--text-400:#64748b;--text-300:#94a3b8;
+  --border:#dbeafe;--border-mid:#bfdbfe;
+  --shadow-sm:0 1px 3px rgba(59,130,246,.08),0 1px 2px rgba(59,130,246,.06);
+  --shadow-md:0 4px 20px rgba(59,130,246,.12),0 2px 8px rgba(59,130,246,.08);
+  --shadow-lg:0 12px 48px rgba(59,130,246,.16),0 4px 16px rgba(59,130,246,.10);
+  --radius-xl:24px;--radius-lg:16px;--radius-md:12px;--radius-sm:8px;
+  --transition:.3s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg-page);color:var(--text-900);min-height:100vh;overflow-x:hidden;}
+::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:var(--blue-50);}::-webkit-scrollbar-thumb{background:var(--blue-300);border-radius:99px;}
 
-  <!-- EmailJS -->
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2/dist/email.min.js"></script>
-  <script>
-    (function(){
-      emailjs.init("YOUR_PUBLIC_KEY"); // 🔑 yaha apni Public Key daal
-    })();
-  </script>
+/* BG */
+.bg-decor{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.bg-blob{position:absolute;border-radius:50%;filter:blur(100px);opacity:.45;}
+.blob1{width:700px;height:700px;background:radial-gradient(circle,rgba(147,197,253,.55),transparent 70%);top:-200px;right:-200px;animation:blobMove 14s ease-in-out infinite;}
+.blob2{width:500px;height:500px;background:radial-gradient(circle,rgba(56,189,248,.38),transparent 70%);bottom:-150px;left:-100px;animation:blobMove 18s ease-in-out infinite reverse;}
+.blob3{width:350px;height:350px;background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%);top:40%;left:40%;animation:blobMove 10s ease-in-out infinite alternate;}
+@keyframes blobMove{0%,100%{transform:translate(0,0)scale(1);}50%{transform:translate(20px,-25px)scale(1.06);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes stepReveal{to{opacity:1;color:var(--blue-600);}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(40px);}to{opacity:1;transform:translateX(0);}}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-40px);}to{opacity:1;transform:translateX(0);}}
+
+#app{position:relative;z-index:1;min-height:100vh;}
+
+/* ---- AUTH ---- */
+#auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+.auth-card{
+  width:100%;max-width:500px;background:rgba(255,255,255,.94);
+  border:1.5px solid var(--border);backdrop-filter:blur(24px);
+  border-radius:var(--radius-xl);padding:52px 48px;
+  box-shadow:var(--shadow-lg);animation:fadeUp .6s ease both;position:relative;overflow:hidden;
+}
+.auth-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--blue-500),var(--sky-400),var(--teal-400));}
+.auth-logo{text-align:center;margin-bottom:28px;}
+.logo-mark-wrap{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:70px;height:70px;border-radius:20px;margin-bottom:14px;
+  background:linear-gradient(135deg,var(--blue-600),var(--sky-500));
+  box-shadow:0 8px 32px rgba(59,130,246,.35);font-size:30px;
+}
+.auth-logo h1{font-size:2rem;font-weight:800;color:var(--blue-700);}
+.auth-logo p{color:var(--text-400);font-size:.88rem;margin-top:5px;}
+
+/* Profile upload */
+.profile-upload-zone{display:flex;flex-direction:column;align-items:center;gap:9px;margin-bottom:22px;cursor:pointer;}
+.avatar-preview{
+  width:78px;height:78px;border-radius:50%;border:3px dashed var(--blue-300);
+  background:var(--blue-50);display:flex;align-items:center;justify-content:center;
+  font-size:26px;overflow:hidden;transition:var(--transition);
+}
+.avatar-preview:hover{border-color:var(--blue-500);background:var(--blue-100);}
+.avatar-preview img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.upload-hint{font-size:.72rem;color:var(--text-400);}
+#avatar-file-input{display:none;}
+
+.auth-tabs{display:flex;gap:4px;background:var(--blue-50);border-radius:var(--radius-md);padding:4px;margin-bottom:26px;}
+.auth-tab{flex:1;padding:10px;border:none;cursor:pointer;background:transparent;color:var(--text-400);font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;font-weight:600;border-radius:10px;transition:var(--transition);}
+.auth-tab.active{background:var(--white);color:var(--blue-700);box-shadow:var(--shadow-sm);}
+.form-group{margin-bottom:17px;}
+.form-group label{display:block;font-size:.73rem;font-weight:700;color:var(--blue-700);margin-bottom:7px;letter-spacing:.06em;text-transform:uppercase;}
+.form-group input{width:100%;padding:13px 16px;background:var(--blue-50);border:1.5px solid var(--border);border-radius:var(--radius-md);color:var(--text-900);font-family:'Plus Jakarta Sans',sans-serif;font-size:.95rem;outline:none;transition:var(--transition);}
+.form-group input:focus{border-color:var(--blue-500);background:var(--white);box-shadow:0 0 0 3px rgba(59,130,246,.12);}
+.form-group input::placeholder{color:var(--text-300);}
+.btn-primary{width:100%;padding:14px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--blue-600),var(--sky-500));color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:.98rem;font-weight:700;border-radius:var(--radius-md);transition:var(--transition);box-shadow:0 4px 20px rgba(59,130,246,.35);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(59,130,246,.45);}
+.auth-error{background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.3);color:#be123c;padding:12px 16px;border-radius:var(--radius-sm);font-size:.84rem;margin-bottom:14px;display:none;}
+
+/* ---- DASHBOARD ---- */
+#dashboard{display:none;min-height:100vh;}
+.navbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:13px 32px;background:rgba(255,255,255,.9);backdrop-filter:blur(20px);border-bottom:1.5px solid var(--border);box-shadow:0 2px 20px rgba(59,130,246,.08);}
+.nav-brand{display:flex;align-items:center;gap:10px;}
+.nav-logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--blue-600),var(--sky-500));display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 4px 12px rgba(59,130,246,.3);}
+.nav-brand-name{font-size:1.3rem;font-weight:800;color:var(--blue-700);}
+.nav-right{display:flex;align-items:center;gap:11px;}
+.nav-user-info{display:flex;align-items:center;gap:9px;padding:6px 15px;background:var(--blue-50);border:1.5px solid var(--border);border-radius:50px;}
+.nav-avatar{width:30px;height:30px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,var(--blue-500),var(--sky-400));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;border:2px solid var(--blue-200);}
+.nav-avatar img{width:100%;height:100%;object-fit:cover;}
+.nav-user-name{font-size:.83rem;font-weight:600;color:var(--blue-700);}
+.btn-logout{padding:7px 18px;border:1.5px solid var(--rose-400);border-radius:50px;background:rgba(251,113,133,.07);color:#be123c;font-family:'Plus Jakarta Sans',sans-serif;font-size:.81rem;font-weight:600;cursor:pointer;transition:var(--transition);}
+.btn-logout:hover{background:rgba(251,113,133,.15);transform:translateY(-1px);}
+
+/* HERO */
+.hero{padding:68px 32px 48px;text-align:center;max-width:820px;margin:0 auto;}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--blue-50),rgba(56,189,248,.15));border:1.5px solid var(--blue-200);color:var(--blue-600);padding:7px 18px;border-radius:50px;font-size:.74rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;margin-bottom:22px;}
+.hero h2{font-size:clamp(1.9rem,5vw,3.5rem);font-weight:800;line-height:1.13;margin-bottom:17px;}
+.hero h2 .grad{background:linear-gradient(90deg,var(--blue-600),var(--sky-500),var(--teal-400));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero p{color:var(--text-500);font-size:1.02rem;line-height:1.76;max-width:580px;margin:0 auto;}
+
+/* IDEA INPUT */
+.idea-container{max-width:780px;margin:0 auto 48px;padding:0 24px;}
+.idea-box{padding:34px 38px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-md);position:relative;overflow:hidden;}
+.idea-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue-500),var(--sky-400),var(--teal-400));}
+.idea-box label{display:block;font-size:.74rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--blue-600);margin-bottom:13px;}
+.idea-input-row{display:flex;gap:11px;}
+#startup-idea{flex:1;padding:14px 17px;background:var(--blue-50);border:1.5px solid var(--border);border-radius:var(--radius-md);color:var(--text-900);font-family:'Plus Jakarta Sans',sans-serif;font-size:.97rem;outline:none;transition:var(--transition);}
+#startup-idea:focus{border-color:var(--blue-500);background:var(--white);box-shadow:0 0 0 3px rgba(59,130,246,.1);}
+#startup-idea::placeholder{color:var(--text-300);}
+.btn-generate{padding:14px 26px;border:none;cursor:pointer;white-space:nowrap;background:linear-gradient(135deg,var(--blue-600),var(--sky-500));color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:.93rem;border-radius:var(--radius-md);transition:var(--transition);display:flex;align-items:center;gap:7px;box-shadow:0 4px 20px rgba(59,130,246,.35);}
+.btn-generate:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(59,130,246,.45);}
+.idea-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:16px;}
+.chip{padding:5px 15px;border-radius:50px;cursor:pointer;border:1.5px solid var(--border);background:var(--blue-50);color:var(--text-500);font-size:.79rem;font-weight:500;transition:var(--transition);}
+.chip:hover{border-color:var(--blue-400);color:var(--blue-600);background:var(--blue-100);}
+
+/* STATS */
+.stats-row{display:none;grid-template-columns:repeat(4,1fr);gap:14px;max-width:960px;margin:0 auto 48px;padding:0 24px;}
+.stats-row.visible{display:grid;animation:fadeUp .5s .1s ease both;}
+.stat-card{padding:20px 18px;border-radius:var(--radius-lg);background:var(--white);border:1.5px solid var(--border);box-shadow:var(--shadow-sm);text-align:center;transition:var(--transition);}
+.stat-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);}
+.stat-num{font-size:1.75rem;font-weight:800;background:linear-gradient(135deg,var(--blue-600),var(--sky-500));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-label{font-size:.7rem;color:var(--text-400);margin-top:4px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;}
+
+/* ANALYTICS */
+#analytics-section{display:none;max-width:960px;margin:0 auto 48px;padding:0 24px;}
+#analytics-section.visible{display:block;animation:fadeUp .5s .15s ease both;}
+.section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.section-hd h3{font-size:1.2rem;font-weight:700;color:var(--text-900);}
+.section-badge{padding:5px 13px;border-radius:50px;background:var(--blue-50);border:1.5px solid var(--blue-200);color:var(--blue-600);font-size:.73rem;font-weight:700;}
+.charts-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;margin-bottom:18px;}
+.chart-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
+.chart-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue-500),var(--sky-400));}
+.chart-card-title{font-size:.74rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--blue-600);margin-bottom:16px;display:flex;align-items:center;gap:7px;}
+.chart-wrap{position:relative;height:195px;}
+
+/* CSS Funding Bars */
+.funding-bars{display:flex;flex-direction:column;gap:12px;padding:6px 0;}
+.funding-row{display:flex;align-items:center;gap:9px;}
+.funding-label{font-size:.76rem;font-weight:600;color:var(--text-600);width:90px;flex-shrink:0;}
+.funding-bar-wrap{flex:1;background:var(--blue-50);border-radius:99px;height:10px;overflow:hidden;border:1px solid var(--blue-100);}
+.funding-bar-fill{height:100%;border-radius:99px;width:0;transition:width 1.3s cubic-bezier(.4,0,.2,1);}
+.funding-val{font-size:.73rem;font-weight:700;color:var(--blue-600);width:44px;text-align:right;flex-shrink:0;}
+
+/* Table */
+.table-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;overflow-x:auto;}
+.table-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal-400),var(--sky-400));}
+.table-card-title{font-size:.74rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--teal-500);margin-bottom:16px;display:flex;align-items:center;gap:7px;}
+.data-table{width:100%;border-collapse:collapse;font-size:.87rem;min-width:620px;}
+.data-table thead tr{border-bottom:2px solid var(--blue-100);}
+.data-table th{padding:9px 13px;text-align:left;font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--blue-600);}
+.data-table tbody tr{border-bottom:1px solid var(--blue-50);transition:var(--transition);}
+.data-table tbody tr:hover{background:var(--blue-50);}
+.data-table td{padding:10px 13px;color:var(--text-600);vertical-align:middle;}
+.data-table td:first-child{font-weight:600;color:var(--text-900);}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:50px;font-size:.7rem;font-weight:700;}
+.status-done{background:rgba(16,185,129,.1);color:#065f46;}
+.status-progress{background:rgba(59,130,246,.1);color:#1e40af;}
+.status-plan{background:rgba(251,191,36,.1);color:#92400e;}
+
+/* SLIDES */
+#slides-section{display:none;max-width:960px;margin:0 auto 80px;padding:0 24px;}
+#slides-section.visible{display:block;animation:fadeUp .5s ease both;}
+.slides-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.slides-hd h3{font-size:1.2rem;font-weight:700;}
+.slide-idea-badge{padding:6px 17px;border-radius:50px;background:linear-gradient(135deg,var(--blue-50),rgba(56,189,248,.12));border:1.5px solid var(--blue-200);color:var(--blue-600);font-size:.8rem;font-weight:700;}
+.slide-progress-wrap{display:flex;align-items:center;gap:13px;margin-bottom:18px;}
+.slide-progress-bar{flex:1;height:5px;background:var(--blue-100);border-radius:99px;overflow:hidden;}
+.slide-progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--blue-500),var(--sky-400));transition:width .5s ease;}
+.slide-counter{font-size:.78rem;color:var(--text-400);white-space:nowrap;font-weight:600;}
+.slide-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-xl);padding:42px 46px;box-shadow:var(--shadow-md);position:relative;overflow:hidden;animation:slideInRight .4s ease both;}
+.slide-card.going-left{animation:slideInLeft .4s ease both;}
+.slide-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--blue-600),var(--sky-400),var(--teal-400));}
+.slide-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:26px;gap:18px;flex-wrap:wrap;}
+.slide-section-label{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue-500);margin-bottom:9px;}
+.slide-section-label::before{content:'';width:18px;height:2px;background:linear-gradient(90deg,var(--blue-500),var(--sky-400));border-radius:99px;display:inline-block;}
+.slide-title{font-size:clamp(1.45rem,3vw,2rem);font-weight:800;line-height:1.16;color:var(--text-900);margin-bottom:5px;}
+.slide-subtitle{color:var(--text-400);font-size:.86rem;font-weight:500;}
+.slide-icon-wrap{width:58px;height:58px;border-radius:15px;flex-shrink:0;background:linear-gradient(135deg,var(--blue-50),var(--blue-100));border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:25px;}
+.slide-content-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:26px;align-items:start;}
+.slide-body p{color:var(--text-500);font-size:.94rem;line-height:1.82;margin-bottom:13px;}
+.slide-body p:last-child{margin-bottom:0;}
+.slide-key-points{background:var(--blue-50);border:1.5px solid var(--blue-100);border-radius:var(--radius-lg);padding:19px 21px;}
+.kp-title{font-size:.7rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--sky-600);margin-bottom:13px;}
+.kp-list{list-style:none;display:flex;flex-direction:column;gap:9px;}
+.kp-list li{display:flex;align-items:flex-start;gap:9px;font-size:.87rem;color:var(--text-600);line-height:1.55;font-weight:500;}
+.kp-list li::before{content:'→';color:var(--blue-500);font-weight:700;flex-shrink:0;margin-top:1px;}
+.slide-video-wrap{margin-top:26px;border-radius:var(--radius-lg);overflow:hidden;border:1.5px solid var(--border);box-shadow:var(--shadow-sm);}
+.slide-video-label{padding:9px 15px;background:var(--blue-50);border-bottom:1.5px solid var(--border);font-size:.7rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--blue-600);display:flex;align-items:center;gap:7px;}
+.slide-video-label::before{content:'▶';color:var(--rose-400);font-size:.65em;}
+.video-container{position:relative;padding-bottom:52%;height:0;overflow:hidden;}
+.video-container iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;}
+.slide-nav{display:flex;align-items:center;justify-content:space-between;margin-top:20px;gap:11px;}
+.btn-nav{display:flex;align-items:center;gap:7px;padding:10px 20px;border:1.5px solid var(--border);background:var(--white);border-radius:var(--radius-md);color:var(--text-500);font-family:'Plus Jakarta Sans',sans-serif;font-size:.87rem;font-weight:600;cursor:pointer;transition:var(--transition);box-shadow:var(--shadow-sm);}
+.btn-nav:hover:not(:disabled){border-color:var(--blue-400);color:var(--blue-600);background:var(--blue-50);transform:translateY(-2px);}
+.btn-nav:disabled{opacity:.35;cursor:not-allowed;}
+.slide-dots{display:flex;gap:5px;align-items:center;}
+.slide-dot{width:7px;height:7px;border-radius:50%;background:var(--blue-200);cursor:pointer;transition:var(--transition);}
+.slide-dot.active{background:var(--blue-500);width:18px;border-radius:4px;}
+
+/* LOADING */
+#loading-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(238,244,255,.92);backdrop-filter:blur(16px);align-items:center;justify-content:center;flex-direction:column;gap:18px;}
+#loading-overlay.show{display:flex;}
+.loader-ring{width:58px;height:58px;border-radius:50%;border:3px solid var(--blue-100);border-top-color:var(--blue-500);border-right-color:var(--sky-400);animation:spin .9s linear infinite;margin:0 auto 18px;}
+.loader-text{font-size:1rem;font-weight:700;color:var(--blue-700);margin-bottom:5px;}
+.loader-sub{font-size:.8rem;color:var(--text-400);}
+.loader-steps{display:flex;flex-direction:column;gap:6px;margin-top:16px;text-align:left;}
+.loader-step{font-size:.8rem;color:var(--text-400);opacity:0;animation:stepReveal .5s ease forwards;}
+
+/* TOAST */
+.toast{position:fixed;bottom:26px;right:26px;z-index:999;padding:12px 18px;border-radius:var(--radius-md);background:var(--white);border:1.5px solid var(--border);box-shadow:var(--shadow-lg);color:var(--text-900);font-size:.87rem;font-weight:600;display:flex;align-items:center;gap:9px;transform:translateY(80px);opacity:0;transition:all .4s ease;max-width:300px;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+footer{border-top:1.5px solid var(--border);padding:26px 32px;text-align:center;color:var(--text-400);font-size:.8rem;background:var(--white);}
+footer span{color:var(--blue-500);font-weight:600;}
+
+@media(max-width:768px){
+  .auth-card{padding:34px 26px;}
+  .navbar{padding:11px 16px;}
+  .nav-user-name{display:none;}
+  .hero{padding:42px 18px 34px;}
+  .idea-box{padding:22px 18px;}
+  .idea-input-row{flex-direction:column;}
+  .slide-card{padding:24px 18px;}
+  .slide-content-grid,.charts-grid{grid-template-columns:1fr;}
+  .stats-row.visible{grid-template-columns:repeat(2,1fr);}
+  .btn-nav span{display:none;}
+  .slide-top{flex-direction:column-reverse;}
+}
+@media(max-width:480px){
+  .stats-row.visible{grid-template-columns:1fr;}
+  .slide-nav{flex-wrap:wrap;}
+  .slide-dots{order:-1;width:100%;justify-content:center;}
+}
+</style>
 </head>
-
 <body>
 
-<h1>🚀 Startify AI</h1>
-
-<!-- 🔐 Registration -->
-<div class="box">
-  <h2>Register</h2>
-  <input id="email" placeholder="Enter Email"><br><br>
-  <button onclick="sendOTP()">Send OTP</button><br><br>
-
-  <input id="otpInput" placeholder="Enter OTP"><br><br>
-  <button onclick="verifyOTP()">Verify</button>
-
-  <p id="otpMsg"></p>
+<div class="bg-decor">
+  <div class="bg-blob blob1"></div>
+  <div class="bg-blob blob2"></div>
+  <div class="bg-blob blob3"></div>
 </div>
 
-<hr>
+<div id="app">
 
-<!-- 🤖 AI SECTION -->
-<div class="box">
-  <input id="userInput" placeholder="Enter any career or business">
-  <button onclick="generatePlan()">Generate</button>
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-mark-wrap">🚀</div>
+      <h1>Startify</h1>
+      <p>Your Premium Startup Planning Platform</p>
+    </div>
+    <div class="profile-upload-zone" onclick="document.getElementById('avatar-file-input').click()" title="Upload profile picture">
+      <div class="avatar-preview" id="auth-avatar-preview"><span>📷</span></div>
+      <span class="upload-hint">Click to upload profile picture (optional)</span>
+    </div>
+    <input type="file" id="avatar-file-input" accept="image/*" onchange="handleAvatarUpload(event)"/>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchTab('register')">Create Account</button>
+    </div>
+    <div id="auth-error" class="auth-error"></div>
+    <div id="login-form">
+      <div class="form-group"><label>Email Address</label><input type="email" id="login-email" placeholder="you@example.com"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-password" placeholder="Your password"/></div>
+      <button class="btn-primary" onclick="handleLogin()">Sign In to Startify →</button>
+    </div>
+    <div id="register-form" style="display:none">
+      <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" placeholder="Your full name"/></div>
+      <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="you@example.com"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="reg-password" placeholder="Min 6 characters"/></div>
+      <button class="btn-primary" onclick="handleRegister()">Create My Account →</button>
+    </div>
+  </div>
 </div>
 
-<div id="output"></div>
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-logo">🚀</div>
+      <span class="nav-brand-name">Startify</span>
+    </div>
+    <div class="nav-right">
+      <div class="nav-user-info">
+        <div class="nav-avatar" id="nav-avatar-wrap"><span id="nav-avatar-letter">U</span></div>
+        <span class="nav-user-name" id="nav-name">User</span>
+      </div>
+      <button class="btn-logout" onclick="handleLogout()">Logout</button>
+    </div>
+  </nav>
 
-<script src="script.js"></script>
+  <div class="hero">
+    <div class="hero-tag">✦ AI Startup Planner</div>
+    <h2>Welcome, <span class="grad" id="hero-name">Entrepreneur</span> 👋</h2>
+    <p>Transform any startup idea into a complete, investor-ready business plan — with roadmaps, live charts, financial tables, and curated resources.</p>
+  </div>
+
+  <div class="idea-container">
+    <div class="idea-box">
+      <label>💡 Enter Your Startup Idea</label>
+      <div class="idea-input-row">
+        <input type="text" id="startup-idea" placeholder="e.g. AI SaaS, Coffee Chain, EdTech App, HealthTech…"/>
+        <button class="btn-generate" onclick="generatePlan()"><span>Generate Plan</span><span>⚡</span></button>
+      </div>
+      <div class="idea-chips">
+        <span class="chip" onclick="setIdea('AI SaaS')">AI SaaS</span>
+        <span class="chip" onclick="setIdea('Coffee Café')">Coffee Café</span>
+        <span class="chip" onclick="setIdea('EdTech App')">EdTech App</span>
+        <span class="chip" onclick="setIdea('HealthTech')">HealthTech</span>
+        <span class="chip" onclick="setIdea('E-Commerce')">E-Commerce</span>
+        <span class="chip" onclick="setIdea('FinTech')">FinTech</span>
+        <span class="chip" onclick="setIdea('Fashion Brand')">Fashion Brand</span>
+        <span class="chip" onclick="setIdea('Gaming Studio')">Gaming Studio</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row" id="stats-row">
+    <div class="stat-card"><div class="stat-num">9</div><div class="stat-label">Plan Sections</div></div>
+    <div class="stat-card"><div class="stat-num">9</div><div class="stat-label">Curated Videos</div></div>
+    <div class="stat-card"><div class="stat-num">50+</div><div class="stat-label">Key Insights</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-year">2025</div><div class="stat-label">Plan Year</div></div>
+  </div>
+
+  <!-- ANALYTICS -->
+  <div id="analytics-section">
+    <div class="section-hd">
+      <h3>📊 Business Analytics Dashboard</h3>
+      <div class="section-badge">Live Preview</div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-title"><span>📈</span> Revenue vs Expenses (₹ Lakhs)</div>
+        <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title"><span>🥧</span> Fund Allocation</div>
+        <div class="chart-wrap"><canvas id="allocationChart"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-title"><span>📊</span> Monthly Active Users — Year 1</div>
+        <div class="chart-wrap"><canvas id="usersChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title"><span>💰</span> Funding Stage Breakdown</div>
+        <div class="funding-bars" id="funding-bars"></div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-card-title"><span>🏆</span> 12-Month Milestone Tracker</div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Milestone</th>
+            <th>Target Month</th>
+            <th>KPI Goal</th>
+            <th>Investment</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="milestone-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SLIDES -->
+  <div id="slides-section">
+    <div class="slides-hd">
+      <h3>📋 Complete Business Plan</h3>
+      <div class="slide-idea-badge" id="slides-idea-badge">Startup Idea</div>
+    </div>
+    <div class="slide-progress-wrap">
+      <div class="slide-progress-bar"><div class="slide-progress-fill" id="progress-fill" style="width:11%"></div></div>
+      <div class="slide-counter" id="slide-counter">1 / 9</div>
+    </div>
+    <div><div class="slide-card" id="slide-card"></div></div>
+    <div class="slide-nav">
+      <button class="btn-nav" id="prev-btn" onclick="changeSlide(-1)" disabled>← <span>Previous</span></button>
+      <div class="slide-dots" id="slide-dots"></div>
+      <button class="btn-nav" id="next-btn" onclick="changeSlide(1)"><span>Next</span> →</button>
+    </div>
+  </div>
+
+  <footer>Built with ❤️ by <span>Startify</span> — Empowering Entrepreneurs Worldwide 🚀</footer>
+</div>
+
+<!-- LOADING -->
+<div id="loading-overlay">
+  <div style="text-align:center">
+    <div class="loader-ring"></div>
+    <div class="loader-text">Crafting your business plan…</div>
+    <div class="loader-sub">Powered by Startify AI</div>
+    <div class="loader-steps">
+      <div class="loader-step" id="ls1">🔍 Analyzing your idea…</div>
+      <div class="loader-step" id="ls2">🗺️ Building roadmap…</div>
+      <div class="loader-step" id="ls3">💰 Calculating financials…</div>
+      <div class="loader-step" id="ls4">📊 Generating charts &amp; tables…</div>
+      <div class="loader-step" id="ls5">✨ Polishing your plan…</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon">✅</span><span id="toast-msg">Done!</span></div>
+</div>
+
+<script>
+/* =========================================================
+   STARTIFY — COMPLETE JAVASCRIPT
+   ========================================================= */
+
+let currentSlide = 0;
+const totalSlides = 9;
+let currentIdea = '';
+let avatarDataUrl = '';
+let chartInstances = {};
+
+// ---- AVATAR ----
+function handleAvatarUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    avatarDataUrl = ev.target.result;
+    const p = document.getElementById('auth-avatar-preview');
+    p.innerHTML = `<img src="${avatarDataUrl}" alt="avatar"/>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ---- AUTH ----
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.getElementById('login-form').style.display = tab==='login'?'block':'none';
+  document.getElementById('register-form').style.display = tab==='register'?'block':'none';
+  document.getElementById('auth-error').style.display='none';
+}
+function showAuthError(msg) {
+  const el=document.getElementById('auth-error');
+  el.textContent=msg;el.style.display='block';
+  setTimeout(()=>el.style.display='none',4000);
+}
+function handleRegister() {
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const pass=document.getElementById('reg-password').value;
+  if(!name) return showAuthError('Please enter your full name.');
+  if(!email||!email.includes('@')) return showAuthError('Please enter a valid email.');
+  if(pass.length<6) return showAuthError('Password must be at least 6 characters.');
+  const users=JSON.parse(localStorage.getItem('startify_users')||'{}');
+  if(users[email]) return showAuthError('This email is already registered.');
+  users[email]={name,email,password:pass,avatar:avatarDataUrl};
+  localStorage.setItem('startify_users',JSON.stringify(users));
+  showToast('✅ Account created! Please sign in.');
+  switchTab('login');
+  document.getElementById('login-email').value=email;
+}
+function handleLogin() {
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-password').value;
+  if(!email) return showAuthError('Please enter your email.');
+  if(!pass) return showAuthError('Please enter your password.');
+  const users=JSON.parse(localStorage.getItem('startify_users')||'{}');
+  const user=users[email];
+  if(!user) return showAuthError('No account found. Please register.');
+  if(user.password!==pass) return showAuthError('Incorrect password.');
+  const finalAvatar=avatarDataUrl||user.avatar||'';
+  if(avatarDataUrl){users[email].avatar=avatarDataUrl;localStorage.setItem('startify_users',JSON.stringify(users));}
+  localStorage.setItem('startify_session',JSON.stringify({name:user.name,email,avatar:finalAvatar}));
+  enterDashboard(user.name,finalAvatar);
+}
+function handleLogout() {
+  localStorage.removeItem('startify_session');
+  Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});
+  chartInstances={};
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('auth-screen').style.display='flex';
+  ['slides-section','analytics-section','stats-row'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.classList.remove('visible');el.style.display='';}
+  });
+  avatarDataUrl='';
+  document.getElementById('auth-avatar-preview').innerHTML='<span>📷</span>';
+  showToast('👋 Logged out successfully.');
+}
+function enterDashboard(name, avatar) {
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  const first=name.split(' ')[0];
+  document.getElementById('hero-name').textContent=first;
+  document.getElementById('nav-name').textContent=first;
+  document.getElementById('stat-year').textContent=new Date().getFullYear();
+  const wrap=document.getElementById('nav-avatar-wrap');
+  if(avatar){wrap.innerHTML=`<img src="${avatar}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>`;}
+  else{document.getElementById('nav-avatar-letter').textContent=first.charAt(0).toUpperCase();}
+}
+(function checkSession(){
+  const s=JSON.parse(localStorage.getItem('startify_session')||'null');
+  if(s) enterDashboard(s.name,s.avatar||'');
+})();
+
+// ---- CHIPS ----
+function setIdea(v){document.getElementById('startup-idea').value=v;document.getElementById('startup-idea').focus();}
+
+// ---- GENERATE ----
+async function generatePlan(){
+  const idea=document.getElementById('startup-idea').value.trim();
+  if(!idea){showToast('⚠️ Please enter a startup idea!');return;}
+  currentIdea=idea; currentSlide=0;
+  const ov=document.getElementById('loading-overlay');
+  ov.classList.add('show');
+  const steps=['ls1','ls2','ls3','ls4','ls5'];
+  steps.forEach(id=>{const e=document.getElementById(id);e.style.animation='none';e.style.opacity='0';});
+  for(let i=0;i<steps.length;i++){await delay(600);const e=document.getElementById(steps[i]);e.style.animation='stepReveal .5s ease forwards';}
+  await delay(700);
+  ov.classList.remove('show');
+  document.getElementById('stats-row').classList.add('visible');
+  const as=document.getElementById('analytics-section');
+  as.classList.add('visible'); as.style.display='block';
+  buildCharts(idea); buildTable(idea);
+  document.getElementById('slides-idea-badge').textContent='📌 '+currentIdea;
+  buildDots(); renderSlide(0,'right');
+  const ss=document.getElementById('slides-section');
+  ss.classList.add('visible'); ss.style.display='block';
+  document.getElementById('stats-row').scrollIntoView({behavior:'smooth',block:'start'});
+  showToast(`✅ Plan ready for "${currentIdea}"`);
+}
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+
+// ---- CHARTS ----
+function buildCharts(idea){
+  Object.values(chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});
+  chartInstances={};
+  const blueGrad=(ctx,c1,c2)=>{const g=ctx.createLinearGradient(0,0,0,200);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;};
+  const commonFont={family:'Plus Jakarta Sans',size:11};
+
+  // Revenue Line
+  const rc=document.getElementById('revenueChart').getContext('2d');
+  const rg=blueGrad(rc,'rgba(59,130,246,.28)','rgba(59,130,246,.02)');
+  chartInstances.rev=new Chart(rc,{
+    type:'line',
+    data:{
+      labels:['Q1','Q2','Q3','Q4','Q5','Q6','Q7','Q8'],
+      datasets:[
+        {label:'Revenue (₹L)',data:[2,5,9,18,32,52,78,115],borderColor:'#3b82f6',backgroundColor:rg,borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#3b82f6',tension:.42,fill:true},
+        {label:'Expenses (₹L)',data:[8,10,12,15,20,28,38,50],borderColor:'#f87171',backgroundColor:'transparent',borderWidth:2,pointRadius:3,pointBackgroundColor:'#f87171',tension:.42,fill:false,borderDash:[5,4]}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:commonFont,color:'#475569',boxWidth:12}}},scales:{x:{grid:{color:'rgba(59,130,246,.06)'},ticks:{color:'#94a3b8',font:commonFont}},y:{grid:{color:'rgba(59,130,246,.06)'},ticks:{color:'#94a3b8',font:commonFont,callback:v=>'₹'+v+'L'}}}}
+  });
+
+  // Doughnut
+  const ac=document.getElementById('allocationChart').getContext('2d');
+  chartInstances.alloc=new Chart(ac,{
+    type:'doughnut',
+    data:{
+      labels:['Product Dev','Marketing','Operations','Legal & HR','Reserve'],
+      datasets:[{data:[35,25,20,10,10],backgroundColor:['#3b82f6','#38bdf8','#2dd4bf','#818cf8','#93c5fd'],borderWidth:2,borderColor:'#ffffff',hoverOffset:8}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{font:{family:'Plus Jakarta Sans',size:10},color:'#475569',boxWidth:10,padding:9}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.parsed}%`}}}}
+  });
+
+  // Bar
+  const uc=document.getElementById('usersChart').getContext('2d');
+  const ug=blueGrad(uc,'rgba(56,189,248,.8)','rgba(59,130,246,.35)');
+  chartInstances.users=new Chart(uc,{
+    type:'bar',
+    data:{
+      labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+      datasets:[{label:'MAU',data:[120,250,420,680,1100,1800,2900,4200,6000,8500,11200,15000],backgroundColor:ug,borderRadius:6,borderSkipped:false}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:'#94a3b8',font:{family:'Plus Jakarta Sans',size:10}}},y:{grid:{color:'rgba(59,130,246,.06)'},ticks:{color:'#94a3b8',font:{family:'Plus Jakarta Sans',size:10},callback:v=>v>=1000?v/1000+'k':v}}}}
+  });
+
+  // Funding CSS bars
+  const bars=[
+    {label:'Friends & Family',val:'₹5L',pct:15,color:'linear-gradient(90deg,#bfdbfe,#93c5fd)'},
+    {label:'Angel Round',val:'₹25L',pct:40,color:'linear-gradient(90deg,#60a5fa,#3b82f6)'},
+    {label:'Seed Round',val:'₹1Cr',pct:68,color:'linear-gradient(90deg,#0ea5e9,#38bdf8)'},
+    {label:'Series A',val:'₹5Cr',pct:100,color:'linear-gradient(90deg,#6366f1,#3b82f6)'},
+  ];
+  const fb=document.getElementById('funding-bars');
+  fb.innerHTML=bars.map(b=>`
+    <div class="funding-row">
+      <span class="funding-label">${b.label}</span>
+      <div class="funding-bar-wrap"><div class="funding-bar-fill" style="background:${b.color}" data-pct="${b.pct}"></div></div>
+      <span class="funding-val">${b.val}</span>
+    </div>`).join('');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    document.querySelectorAll('.funding-bar-fill').forEach(el=>el.style.width=el.dataset.pct+'%');
+  }));
+}
+
+// ---- TABLE ----
+function buildTable(){
+  const rows=[
+    {name:'Market Research & Validation',month:'Month 1–2',kpi:'50 customer interviews',inv:'₹20,000',status:'done'},
+    {name:'MVP Development',month:'Month 2–3',kpi:'Beta product ready',inv:'₹1,50,000',status:'done'},
+    {name:'Beta User Testing',month:'Month 3–4',kpi:'100 beta users',inv:'₹30,000',status:'done'},
+    {name:'Official Product Launch',month:'Month 4',kpi:'500 sign-ups Day 1',inv:'₹80,000',status:'progress'},
+    {name:'First Revenue Milestone',month:'Month 5',kpi:'₹2L MRR',inv:'₹50,000',status:'progress'},
+    {name:'Paid Marketing Campaigns',month:'Month 5–7',kpi:'3x ROAS',inv:'₹2,00,000',status:'progress'},
+    {name:'Angel Funding Round',month:'Month 6',kpi:'₹25L raised',inv:'—',status:'plan'},
+    {name:'Team Expansion',month:'Month 7–8',kpi:'5 key hires',inv:'₹3,00,000',status:'plan'},
+    {name:'10,000 Active Users',month:'Month 9',kpi:'NPS score ≥ 50',inv:'₹1,00,000',status:'plan'},
+    {name:'Series Seed Preparation',month:'Month 11–12',kpi:'₹1Cr ARR',inv:'₹50,000',status:'plan'},
+  ];
+  const sm={done:'status-done',progress:'status-progress',plan:'status-plan'};
+  const sl={done:'✅ Complete',progress:'🔄 In Progress',plan:'📋 Planned'};
+  document.getElementById('milestone-tbody').innerHTML=rows.map(r=>`
+    <tr>
+      <td>${r.name}</td>
+      <td><span style="font-family:'JetBrains Mono',monospace;font-size:.79rem;color:#0284c7;">${r.month}</span></td>
+      <td>${r.kpi}</td>
+      <td style="font-weight:700;color:#1d4ed8;">${r.inv}</td>
+      <td><span class="status-badge ${sm[r.status]}">${sl[r.status]}</span></td>
+    </tr>`).join('');
+}
+
+// ---- SLIDES DATA ----
+function buildSlides(I){
+  return [
+    {section:'Introduction',icon:'🌟',title:`${I}: The Vision`,subtitle:'Overview & Core Concept',
+     body:[`The ${I} venture represents a timely and transformative opportunity in today's rapidly evolving market. Entrepreneurs who enter this space with clarity, preparation, and a user-centric mindset stand to capture significant value and build lasting impact. Starting a business in the ${I} domain requires not just passion, but a structured approach to understanding market needs and delivering consistent value to customers who are actively seeking better solutions.`,
+           `This business plan outlines a comprehensive 360-degree blueprint for building your ${I} business from the ground up. It covers every critical dimension — from ideation and market research to financial modeling and scale-up strategies. Whether you're a first-time founder or a seasoned operator, this plan serves as your guiding compass through every phase of growth, helping you make data-driven decisions and prioritize the actions that matter most.`,
+           `The ${I} industry is uniquely positioned at the convergence of consumer demand, technological advancement, and social change. By entering this market with a differentiated offering and a scalable model, you can build a company that is both profitable and purpose-driven. The sections ahead walk you through every step needed to transform your idea into a thriving enterprise ready for investment and sustainable long-term growth.`],
+     keyPoints:['Market-driven opportunity','Scalable business model','Strong growth potential','Purpose-led company vision'],videoId:'oFMmBgSaqxg'},
+    {section:'Roadmap',icon:'🗺️',title:`${I}: 12-Month Roadmap`,subtitle:'From Idea to Market Leadership',
+     body:[`The roadmap for your ${I} business is structured across four quarterly phases designed to take you from raw concept to operational excellence. In the first 90 days, your focus should be entirely on market validation: conduct 50+ customer interviews, identify your ideal customer profile (ICP), and test your core value proposition using a minimum viable product (MVP). This phase is about learning fast, iterating quickly, and failing cheap so every subsequent investment is grounded in real evidence rather than assumption.`,
+           `Months 4–6 represent your launch phase. By this point you should have a polished product or service, a functioning distribution channel, and at least 10–20 paying customers providing real revenue signals. Invest in brand building, set up your social media presence, and establish your first operational processes. Begin tracking key performance indicators (KPIs) such as customer acquisition cost (CAC), churn rate, and monthly recurring revenue (MRR) to identify bottlenecks before they become critical problems.`,
+           `The third quarter (months 7–9) is your growth phase — double down on what's working. Optimize your sales funnel, hire your first core team members, and begin partnerships that accelerate distribution. The final quarter is about scale: systemize operations, pursue funding if needed, and set ambitious but achievable targets for your second year. A disciplined roadmap prevents distraction and ensures every action ties back to your north-star goal of building a profitable, investor-attractive company.`],
+     keyPoints:['Phase 1: Validate (0–3M)','Phase 2: Launch (4–6M)','Phase 3: Grow (7–9M)','Phase 4: Scale (10–12M)'],videoId:'ZoqgAy3h4OM'},
+    {section:'Investment',icon:'💰',title:`${I}: Funding Strategy`,subtitle:'Capital Requirements & Investor Approach',
+     body:[`Building a successful ${I} business requires a clearly defined funding strategy that aligns with your growth stage and investor expectations. For early-stage ventures, bootstrapping is often the most practical route — it forces disciplined spending and helps you retain maximum equity. However, for capital-intensive models in the ${I} space, external funding may be necessary to achieve the speed of growth required to win the market before competitors can consolidate their position.`,
+           `The typical funding journey for a ${I} startup begins with friends-and-family rounds or personal savings, followed by angel investment (₹10L–₹50L) to reach product-market fit. Once you've demonstrated traction with 6–12 months of consistent revenue growth, you become attractive to institutional investors such as venture capital firms who can provide Series A funding in the ₹1Cr–₹5Cr range. At each stage, your valuation and terms should reflect your traction metrics and competitive positioning relative to market benchmarks.`,
+           `When approaching investors, your pitch must clearly articulate three things: the problem you're solving, the size of the market opportunity, and your unique ability to win. Prepare a detailed financial model showing revenue projections, unit economics, and use of funds. Practice your pitch relentlessly, leverage warm introductions, and always follow up with data-backed updates. Remember: investors invest in people as much as ideas, so build authentic relationships well before you need capital.`],
+     keyPoints:['Bootstrap first, fund later','Angel → VC funding path','Pitch with data & conviction','Protect equity strategically'],videoId:'xTkBJN29wJg'},
+    {section:'Licenses',icon:'📄',title:`${I}: Legal & Compliance`,subtitle:'Licenses, Permits & Registrations',
+     body:[`Navigating the legal landscape is one of the most critical and often overlooked aspects of launching a ${I} business. Starting on the right legal footing protects you from costly penalties, enables you to operate with confidence, and builds trust with customers, partners, and investors. The first step is choosing the appropriate business structure: sole proprietorship, partnership, LLP, or private limited company — each has different tax implications, liability protections, and compliance requirements suited to different growth trajectories.`,
+           `For most ${I} businesses in India, registration under the Ministry of Corporate Affairs (MCA) is mandatory. You'll need a Director Identification Number (DIN), a Digital Signature Certificate (DSC), and your Memorandum and Articles of Association. Additionally, GST registration is required if your annual turnover exceeds ₹20 lakhs. Depending on your specific activities, you may also need sector-specific licenses such as FSSAI (food businesses), RBI approval (fintech), or ISO certifications to demonstrate quality standards and build credibility with enterprise clients.`,
+           `Protect your intellectual property early: register trademarks for your brand name, logo, and key product names. If you're building technology, consider patent protection for novel features. Draft iron-clad contracts for co-founders, employees, and vendors — a well-structured shareholder agreement prevents costly disputes later. Labour law compliance, including PF, ESI, and gratuity registration, is mandatory once you cross certain employee thresholds. Invest in a good startup lawyer from day one; it's far cheaper than fixing legal problems retroactively.`],
+     keyPoints:['Register company structure','GST & sector licenses','Trademark your brand','Draft iron-clad agreements'],videoId:'XhLWkPVT5p8'},
+    {section:'Tools & Resources',icon:'🛠️',title:`${I}: Tech Stack & Tools`,subtitle:'Software, Platforms & Resources',
+     body:[`In today's digital-first world, the right tools can dramatically accelerate your ${I} business without requiring a large team or budget. The modern startup toolkit spans operations, marketing, product development, customer success, and finance — and most best-in-class tools offer generous free tiers or startup discounts that make them accessible from day one, meaningfully reducing your initial operating costs and time-to-market.`,
+           `For operations and project management, tools like Notion, Trello, or Linear help your team stay aligned and accountable. For customer relationship management (CRM), HubSpot's free tier is ideal for early-stage businesses and scales beautifully. Marketing automation can be handled by Mailchimp or Brevo, while social media scheduling can be managed via Buffer. For your website, no-code builders like Webflow or Framer let you launch a professional presence without a developer, saving weeks of development time.`,
+           `On the financial side, Zoho Books or QuickBooks handle accounting and invoicing efficiently. For product design, Figma is the industry standard for UI/UX. Analytics are best tracked through Google Analytics, Mixpanel, or Amplitude. For customer support, Freshdesk or Intercom provide affordable ticketing and live chat. Resource programs like Y Combinator Startup School, Google for Startups, and AWS Activate offer mentorship, funding, and cloud credits worth $5,000–$100,000 to qualifying early-stage companies.`],
+     keyPoints:['Notion + Linear for ops','HubSpot CRM (free tier)','Figma for product design','Mixpanel for analytics'],videoId:'uLKjKmBmMkI'},
+    {section:'Opportunities',icon:'🎯',title:`${I}: Market Opportunity`,subtitle:'TAM, SAM, SOM & Competitive Edge',
+     body:[`The market opportunity for a well-executed ${I} venture is substantial and growing. Understanding the total addressable market (TAM), serviceable addressable market (SAM), and serviceable obtainable market (SOM) is critical for communicating your opportunity to investors and for setting realistic growth targets. Begin with a top-down analysis of the global market size, then narrow to your geography and target customer segment, identifying the most underserved pockets where your solution delivers the highest measurable value.`,
+           `The ${I} space is undergoing significant disruption driven by changing consumer behaviors, digital adoption, and shifting economic dynamics. Conduct a thorough competitive analysis: map every direct and indirect competitor, identify their strengths and weaknesses, and position your offering where you can genuinely win on value, speed, price point, or customer experience. A differentiated positioning — not just a different product — is what drives sustainable market share and makes customer switching costs work in your favor.`,
+           `Strategic partnerships represent a major untapped opportunity for early-stage ${I} startups. By co-marketing with complementary businesses, integrating with popular platforms, or signing distribution agreements with established players, you can access large audiences without the full cost of acquisition. Government schemes — including DPIIT recognition, Startup India benefits, SIDBI funding, and sector-specific subsidies — can meaningfully reduce your burn rate and provide institutional credibility that accelerates enterprise sales cycles.`],
+     keyPoints:['TAM/SAM/SOM analysis','Competitive differentiation','Partnership distribution','Government scheme benefits'],videoId:'w4eTR7tci6A'},
+    {section:'Income',icon:'📈',title:`${I}: Revenue Model`,subtitle:'Monetization, Pricing & Financial Projections',
+     body:[`A sustainable and diversified revenue model is the backbone of any successful ${I} business. Before settling on a pricing strategy, you must deeply understand your customer's willingness to pay, the perceived value of your offering, and what comparable solutions cost in the market. Pricing too low destroys margin and positions you as a commodity; pricing too high limits adoption in the early stages when you most need customer traction and testimonials to build social proof.`,
+           `The most common revenue models for ${I} startups include subscription-based pricing (predictable recurring revenue ideal for SaaS), transaction-based fees (pay-per-use or commission common in marketplaces), freemium (free core product with premium upgrades to convert high-intent users), and project-based or retainer billing for service businesses. The best model depends on your customer type, sales cycle length, and unit economics — specifically whether your customer lifetime value (LTV) is at least 3x your customer acquisition cost (CAC).`,
+           `Projecting your financials realistically is crucial for both internal planning and investor conversations. In Year 1, focus on validating your revenue model and achieving 20–50 paying customers or a clear conversion funnel with measurable CAC. Year 2 should bring 3–5x revenue growth through optimized acquisition and retention. By Year 3, you should be approaching profitability or have a clear path to it. Track monthly: total revenue, gross margin, LTV, CAC payback period, and monthly burn rate. A business that understands its numbers intimately is one that attracts both investors and talented team members.`],
+     keyPoints:['Subscription & recurring model','LTV > 3x CAC target','3-year revenue projection','Gross margin optimization'],videoId:'eN7oKkJ-Aj0'},
+    {section:'Challenges',icon:'⚡',title:`${I}: Key Challenges`,subtitle:'Risks, Obstacles & Mitigation Strategies',
+     body:[`Every startup, regardless of how well-conceived, will face significant challenges along its journey. For a ${I} business, the most common obstacles include finding and retaining product-market fit, managing cash flow during growth phases, building a cohesive founding team, and navigating regulatory complexity. Acknowledging these challenges early — rather than dismissing them — is the mark of a mature and credible founder. Investors specifically look for founders who understand the risks and have concrete mitigation plans.`,
+           `Customer acquisition is often the first major hurdle. Even with a great product, getting your first 100 customers requires relentless hustle — direct outreach, content marketing, referral programs, and community building. Once you have customers, retention becomes equally critical: the cost of losing a customer is 5–7x the cost of retaining one. Invest in customer success infrastructure from day one, establish feedback loops, and continuously improve your product based on real usage data rather than internal assumptions.`,
+           `Hiring and team-building is another perennial challenge. Early hires set the cultural DNA of your company — hire for attitude and coachability as much as for skill. Avoid the temptation to over-hire too early; a lean team that moves fast is more powerful than a large team moving slowly. Financial discipline is non-negotiable: maintain a minimum 6-month cash runway at all times, diversify your revenue streams to reduce dependency on any single client or channel, and never stop fundraising until you're comfortably profitable and cash flow positive.`],
+     keyPoints:['Finding product-market fit','Customer retention strategy','Smart lean team hiring','Cash flow management'],videoId:'CGSdK7FI9MY'},
+    {section:'Growth',icon:'🚀',title:`${I}: Scale & Growth`,subtitle:'Expansion Strategy & Long-Term Vision',
+     body:[`Scaling a ${I} business is fundamentally different from starting one. In the early stages, growth is about experimentation and learning. At scale, it's about systematization, predictability, and compounding returns on your brand, product, and customer base. The transition from founder-led growth to a systemized growth engine requires building repeatable processes, leveraging data for every major decision, and developing a leadership team capable of operating autonomously.`,
+           `Growth hacking — a combination of creative marketing, viral loops, and rapid experimentation — can unlock non-linear growth for digital ${I} businesses. Classic growth levers include referral programs (Dropbox's famous "give and get" model generated 3,900% growth), content marketing that drives organic SEO traffic at zero marginal cost, strategic PR and media placements that create credibility flywheel effects, influencer partnerships targeted at your ideal customer profile, and product-led growth (PLG) where the product itself becomes the primary acquisition and retention channel through network effects.`,
+           `Geographic expansion, product line extension, and ecosystem partnerships are the three pillars of long-term scale for a ${I} business. Once you've proven your model in one market, replicate it systematically in adjacent markets using the validated playbook. Continuously invest in your brand — a strong brand compounds over time, reducing CAC and increasing LTV with every passing quarter. Think long-term: the most enduring companies are built on genuine customer love, operational excellence, and a relentless culture of innovation that keeps both talent and customers deeply engaged.`],
+     keyPoints:['Build growth flywheels','Product-led growth (PLG)','Geographic expansion plan','Brand as a long-term moat'],videoId:'v-WL0PaFjhs'},
+  ];
+}
+
+// ---- RENDER SLIDE ----
+function renderSlide(index, direction){
+  const slides=buildSlides(currentIdea);
+  const d=slides[index];
+  const card=document.getElementById('slide-card');
+  card.style.animation='none';void card.offsetWidth;
+  card.className='slide-card'+(direction==='left'?' going-left':'');
+  card.innerHTML=`
+    <div class="slide-top">
+      <div class="slide-meta">
+        <div class="slide-section-label">${d.section}</div>
+        <div class="slide-title">${d.title}</div>
+        <div class="slide-subtitle">${d.subtitle}</div>
+      </div>
+      <div class="slide-icon-wrap">${d.icon}</div>
+    </div>
+    <div class="slide-content-grid">
+      <div class="slide-body">${d.body.map(p=>`<p>${p}</p>`).join('')}</div>
+      <div class="slide-key-points">
+        <div class="kp-title">✦ Key Takeaways</div>
+        <ul class="kp-list">${d.keyPoints.map(k=>`<li>${k}</li>`).join('')}</ul>
+      </div>
+    </div>
+    <div class="slide-video-wrap">
+      <div class="slide-video-label">Recommended Resource</div>
+      <div class="video-container">
+        <iframe src="https://www.youtube.com/embed/${d.videoId}?rel=0&modestbranding=1" allowfullscreen loading="lazy" title="${d.section}"></iframe>
+      </div>
+    </div>`;
+  const pct=((index+1)/totalSlides)*100;
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('slide-counter').textContent=`${index+1} / ${totalSlides}`;
+  document.getElementById('prev-btn').disabled=index===0;
+  document.getElementById('next-btn').disabled=index===totalSlides-1;
+  document.querySelectorAll('.slide-dot').forEach((dot,i)=>dot.classList.toggle('active',i===index));
+}
+
+// ---- NAV ----
+function changeSlide(dir){
+  const n=currentSlide+dir;
+  if(n<0||n>=totalSlides)return;
+  currentSlide=n;
+  renderSlide(currentSlide,dir>0?'right':'left');
+}
+function buildDots(){
+  const c=document.getElementById('slide-dots');
+  c.innerHTML='';
+  for(let i=0;i<totalSlides;i++){
+    const d=document.createElement('div');
+    d.className='slide-dot'+(i===0?' active':'');
+    d.onclick=()=>{const dir=i>currentSlide?'right':'left';currentSlide=i;renderSlide(i,dir);};
+    c.appendChild(d);
+  }
+}
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('slides-section').classList.contains('visible')){
+    if(e.key==='ArrowRight')changeSlide(1);
+    if(e.key==='ArrowLeft')changeSlide(-1);
+  }
+});
+
+// ---- TOAST ----
+let toastT;
+function showToast(msg,icon='✅'){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-icon').textContent=icon;
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('show'),3400);
+}
+
+// ---- ENTER KEY ----
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('startup-idea')?.addEventListener('keydown',e=>{if(e.key==='Enter')generatePlan();});
+  document.getElementById('login-password')?.addEventListener('keydown',e=>{if(e.key==='Enter')handleLogin();});
+  document.getElementById('reg-password')?.addEventListener('keydown',e=>{if(e.key==='Enter')handleRegister();});
+});
+</script>
 </body>
 </html>

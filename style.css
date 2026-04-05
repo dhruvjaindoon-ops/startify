@@ -1,36 +1,94 @@
-body {
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
   font-family: Arial;
-  background: #0f172a;
-  color: white;
+}
+
+body {
+  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+  min-height: 100vh;
+}
+
+/* LOGIN */
+.login-box {
+  width: 300px;
+  margin: 100px auto;
   padding: 20px;
-}
-
-h1 {
+  background: #1e2a38;
+  border-radius: 10px;
   text-align: center;
 }
 
-.box {
-  text-align: center;
-  margin-bottom: 20px;
+.login-box h2 {
+  color: white;
+  margin-bottom: 10px;
 }
 
-input {
+.login-box input {
+  width: 100%;
   padding: 10px;
-  width: 250px;
+  margin-bottom: 10px;
 }
 
-button {
+.login-box button {
   padding: 10px;
+  width: 100%;
   background: green;
   color: white;
   border: none;
-  cursor: pointer;
 }
 
-#output {
+/* INPUT */
+.input-box {
+  width: 90%;
+  margin: 20px auto;
+  display: flex;
+  gap: 10px;
+}
+
+.input-box input {
+  flex: 1;
+  padding: 12px;
+}
+
+.input-box button {
+  padding: 12px;
+  background: green;
+  color: white;
+  border: none;
+}
+
+/* SLIDE */
+.slide {
+  width: 90%;
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 30px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 15px;
+}
+
+.slide h2 {
+  color: white;
+  margin-bottom: 15px;
+}
+
+.slide p {
+  color: #ddd;
+  line-height: 1.6;
+}
+
+iframe {
   margin-top: 20px;
-  background: #1e293b;
-  padding: 25px;
-  border-radius: 10px;
-  line-height: 1.7;
+}
+
+/* BUTTONS */
+.buttons {
+  margin-top: 20px;
+}
+
+button {
+  padding: 10px 15px;
+  margin-right: 10px;
 }
